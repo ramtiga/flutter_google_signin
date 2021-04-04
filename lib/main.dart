@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_signin/provider/google_sign_in.dart';
 
 final googleSignInProvider =
     ChangeNotifierProvider((ref) => GoogleSignInProvider());
@@ -47,22 +47,20 @@ class MyHomePage extends StatelessWidget {
                 final user = FirebaseAuth.instance.currentUser;
                 return Container(
                   alignment: Alignment.center,
-                  color: Colors.blueGrey[700],
+                  color: Colors.pink[50],
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text('Logged In', style: TextStyle(color: Colors.white)),
+                      Text('Logged In'),
                       SizedBox(height: 10),
                       CircleAvatar(
                           maxRadius: 25,
                           backgroundImage: NetworkImage(user.photoURL)),
                       SizedBox(height: 10),
-                      Text('Name: ' + user.displayName,
-                          style: TextStyle(color: Colors.white)),
+                      Text('Name: ' + user.displayName),
                       SizedBox(height: 10),
-                      Text('Email: ' + user.email,
-                          style: TextStyle(color: Colors.white)),
+                      Text('Email: ' + user.email),
                       SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
@@ -92,53 +90,5 @@ class MyHomePage extends StatelessWidget {
             }),
       );
     });
-  }
-}
-
-class GoogleSignInProvider extends ChangeNotifier {
-  final googleSignIn = GoogleSignIn();
-  bool _isSignIn;
-
-  GoogleSignInProvider() {
-    _isSignIn = false;
-  }
-
-  bool get isSignIn => _isSignIn;
-
-  set isSignIn(bool isSignIn) {
-    _isSignIn = isSignIn;
-    notifyListeners();
-  }
-
-  //ログイン
-  Future login() async {
-    isSignIn = true;
-    try {
-      final user = await googleSignIn.signIn();
-
-      if (user == null) {
-        isSignIn = false;
-        return;
-      } else {
-        final auth = await user.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: auth.accessToken,
-          idToken: auth.idToken,
-        );
-        await FirebaseAuth.instance.signInWithCredential(credential);
-
-        isSignIn = false;
-      }
-    } on FirebaseAuthException catch (e) {
-      print('FirebaseAuthException: ${e.code}');
-    } on Exception catch (e) {
-      print('Exception: ${e.toString()}');
-    }
-  }
-
-  //ログアウト
-  void logout() async {
-    await googleSignIn.disconnect();
-    FirebaseAuth.instance.signOut();
   }
 }
